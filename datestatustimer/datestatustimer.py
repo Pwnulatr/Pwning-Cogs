@@ -13,6 +13,15 @@ __author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.4"
 
 
+def owner_command(hidden=False):
+    def decorator(func):
+        def wrapper(self, *args):
+            return self.datestatus.command(name=func.__name__[1:-11], pass_context=False, hidden=hidden)(
+                checks.is_owner()(func))
+        return wrapper
+    return decorator
+
+
 class Datestatustimer:
     def __init__(self, bot):
         self.bot = bot
@@ -24,12 +33,6 @@ class Datestatustimer:
         for k, v in d.items():
             self.settings[k] = v
         dataIO.save_json(self.file_path, self.settings)
-
-    def owner_command(self, hidden=False):
-        def decorator(func):
-            return self.datestatus.command(name=func.__name__[1:-11], pass_context=False, hidden=hidden)(
-                checks.is_owner()(func))
-        return decorator
 
     @commands.group(pass_context=True)
     async def datestatus(self, ctx):
