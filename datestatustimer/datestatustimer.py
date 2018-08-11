@@ -10,7 +10,7 @@ import datetime
 from typing import Dict
 
 __author__ = "Pwnulatr and Tyler"
-__version__ = "1.1.3"
+__version__ = "1.1.4"
 
 
 class Datestatustimer:
