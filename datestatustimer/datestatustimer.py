@@ -60,8 +60,7 @@ class Datestatustimer:
     async def _force_update_datestatus(self):
         status_verify = self.create_status()
         await self.bot.change_presence(game=discord.Game(name=status_verify))
-        global last_check
-        last_check = int(time.perf_counter())
+        self.last_check = int(time.perf_counter())
         await self.bot.say("Done.")
 
     def check_date(self):
