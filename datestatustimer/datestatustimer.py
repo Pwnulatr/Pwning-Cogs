@@ -16,8 +16,9 @@ __version__ = "1.1.4"
 def owner_command(hidden=False, context=False):
     def decorator(func):
         def wrapper(self, *args):
-            return self.datestatus.command(name=func.__name__[1:-11], pass_context=context, hidden=hidden)(
-                checks.is_owner()(func()))
+            decorator1 = self.datestatus.command(name=func.__name__[1:-11], pass_context=context, hidden=hidden)
+            decorator2 = checks.is_owner()
+            return decorator1(decorator2(func))
         return wrapper
     return decorator
 
