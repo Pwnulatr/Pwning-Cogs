@@ -23,6 +23,7 @@ def owner_command(hidden=False):
 
 
 class Datestatustimer:
+    """Calculates the time between dates and makes it the bot \"playing\" status"""
     def __init__(self, bot):
         self.bot = bot
         self.file_path = "data/pwning-cogs/datestatustimer/settings.json"
@@ -36,11 +37,13 @@ class Datestatustimer:
 
     @commands.group(pass_context=True)
     async def datestatus(self, ctx):
+        """These are the settings for the date status cog"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
     @owner_command()
     async def _date_datestatus(self, month: int, day: int):
+        """Set the date for countdown"""
         try:
             datetime.datetime.strptime(f"{month}-{day}", "%m-%d")
             self.change_settings({"MONTH_NUMBER": month, "DAY_NUMBER": day})
@@ -51,16 +54,19 @@ class Datestatustimer:
 
     @owner_command()
     async def _printdate_datestatus(self):
+        """Prints date that the cog is counting towards"""
         await self.bot.say(f"Counting down towards "
                            f"{month_name(self.settings['MONTH_NUMBER'])} {self.settings['DAY_NUMBER']}")
 
     @owner_command()
     async def _name_datestatus(self, *, name=None):
+        """Name for the day that you are counting down for. Leave blank to clear."""
         self.change_settings({"DATE_NAME": name})
         await self.bot.say(f"Date name successfully set to `{name}`" if name else "Date name cleared.")
 
     @owner_command()
     async def _force_update_datestatus(self):
+        """Forces an update of the status on command"""
         status_verify = self.create_status()
         await self.bot.change_presence(game=discord.Game(name=status_verify))
         self.last_check = int(time.perf_counter())
