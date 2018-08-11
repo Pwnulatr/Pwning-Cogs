@@ -71,6 +71,7 @@ class Datestatustimer:
 
     @datestatus.command(name="printdate", pass_context=False)
     @checks.is_owner()
+    @test_decorator("POTATO!")
     async def _printdate_datestatus(self):
         """Prints date that the cog is counting towards"""
         await self.bot.say(f"Counting down towards "
