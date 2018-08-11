@@ -43,7 +43,7 @@ class Datestatustimer:
 
     @datestatus.command(name="date", pass_context=True)
     @checks.is_owner()
-    async def _date_datestatus(self, month: int, day: int):
+    async def _date_datestatus(self, ctx, month: int, day: int):
         """Set the date for countdown"""
         try:
             datetime.datetime.strptime(f"{month}-{day}", "%m-%d")
@@ -53,7 +53,7 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
-    @datestatus.command(name="printdate", pass_context=True)
+    @datestatus.command(name="printdate", pass_context=False)
     @checks.is_owner()
     async def _printdate_datestatus(self):
         """Prints date that the cog is counting towards"""
