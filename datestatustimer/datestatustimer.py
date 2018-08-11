@@ -18,7 +18,7 @@ def owner_command(hidden=False, context=False):
         def wrapper(self, *args):
             decorator1 = self.datestatus.command(name=func.__name__[1:-11], pass_context=context, hidden=hidden)
             decorator2 = checks.is_owner()
-            return decorator1(decorator2(func))
+            return decorator1(decorator2(func(*args)))
         return wrapper
     return decorator
 
