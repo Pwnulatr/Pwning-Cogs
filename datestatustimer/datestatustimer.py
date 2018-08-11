@@ -14,30 +14,6 @@ __author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.4"
 
 
-async def test_decorator(arg):
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
-            self.bot.say(arg)
-            return func(self, *args, **kwargs)
-        return wrapper
-    return decorator
-
-
-def owner_command(hidden=False, context=False):
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
-            decorator1 = self.datestatus.command(name=func.__name__[1:-11], pass_context=context, hidden=hidden)
-            self.bot.say("The next 3 lines are things")
-            self.bot.say(decorator1)
-            decorator2 = checks.is_owner()
-            self.bot.say(decorator2)
-            q = decorator1(decorator2(func(self, *args, **kwargs)))
-            self.bot.say(q)
-            return q
-        return wrapper
-    return decorator
-
-
 class Datestatustimer:
     """Calculates the time between dates and makes it the bot \"playing\" status"""
     def __init__(self, bot):
@@ -76,14 +52,16 @@ class Datestatustimer:
         await self.bot.say(f"Counting down towards "
                            f"{month_name(self.settings['MONTH_NUMBER'])} {self.settings['DAY_NUMBER']}")
 
-    @owner_command()
-    async def _name_datestatus(self, *, name=None):
+    @datestatus.command()
+    @checks.is_owner()
+    async def name(self, *, name=None):
         """Name for the day that you are counting down for. Leave blank to clear."""
         self.change_settings({"DATE_NAME": name})
         await self.bot.say(f"Date name successfully set to `{name}`" if name else "Date name cleared.")
 
-    @owner_command()
-    async def _force_update_datestatus(self):
+    @datestatus.command()
+    @checks.is_owner()
+    async def force_update(self):
         """Forces an update of the status on command"""
         status_verify = self.create_status()
         await self.bot.change_presence(game=discord.Game(name=status_verify))
