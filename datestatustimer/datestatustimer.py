@@ -16,7 +16,6 @@ __version__ = "1.1.4"
 
 
 def test_decorator(func):
-    @wraps(func)
     def wrapper(*args, **kwargs):
         args[0].bot.say("HELLooh")
         return func(*args, **kwargs)
@@ -69,9 +68,9 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
+    @test_decorator
     @datestatus.command(name="printdate", pass_context=False)
     @checks.is_owner()
-    @test_decorator
     async def _printdate_datestatus(self):
         """Prints date that the cog is counting towards"""
         await self.bot.say(f"Counting down towards "
