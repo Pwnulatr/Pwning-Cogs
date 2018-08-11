@@ -13,6 +13,13 @@ __author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.4"
 
 
+def test_decorator(func):
+    def wrapper(*args, **kwargs):
+        args[0].bot.say("HELLooh")
+        return func(*args, **kwargs)
+    return wrapper
+
+
 def owner_command(hidden=False, context=False):
     def wrapper(self, *args, **kwargs):
         def decorator(func):
@@ -47,7 +54,8 @@ class Datestatustimer:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @owner_command(context=True)
+    @datestatus.command(name="date", pass_context=True)
+    @checks.is_owner()
     async def _date_datestatus(self, ctx, month: int, day: int):
         """Set the date for countdown"""
         try:
@@ -58,7 +66,9 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
-    @owner_command()
+    @datestatus.command(name="printdate", pass_context=False)
+    @checks.is_owner()
+    @test_decorator
     async def _printdate_datestatus(self):
         """Prints date that the cog is counting towards"""
         await self.bot.say(f"Counting down towards "
