@@ -41,7 +41,8 @@ class Datestatustimer:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @owner_command()
+    @datestatus.command(name="date", pass_context=True)
+    @checks.is_owner()
     async def _date_datestatus(self, month: int, day: int):
         """Set the date for countdown"""
         try:
@@ -52,7 +53,8 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
-    @owner_command()
+    @datestatus.command(name="printdate", pass_context=True)
+    @checks.is_owner()
     async def _printdate_datestatus(self):
         """Prints date that the cog is counting towards"""
         await self.bot.say(f"Counting down towards "
