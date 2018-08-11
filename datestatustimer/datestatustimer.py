@@ -14,8 +14,8 @@ __version__ = "1.1.4"
 
 
 def owner_command(hidden=False, context=False):
-    def decorator(func):
-        def wrapper(self, *args, **kwargs):
+    def wrapper(self, *args, **kwargs):
+        def decorator(func):
             decorator1 = self.datestatus.command(name=func.__name__[1:-11], pass_context=context, hidden=hidden)
             self.bot.say("The next 3 lines are things")
             self.bot.say(decorator1)
@@ -24,8 +24,8 @@ def owner_command(hidden=False, context=False):
             q = decorator1(decorator2(func(*args, **kwargs)))
             self.bot.say(q)
             return q
-        return wrapper
-    return decorator
+        return decorator
+    return wrapper
 
 
 class Datestatustimer:
