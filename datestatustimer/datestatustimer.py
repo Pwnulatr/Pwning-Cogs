@@ -14,7 +14,7 @@ __author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.4"
 
 
-def test_decorator(arg):
+async def test_decorator(arg):
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             self.bot.say(arg)
@@ -57,9 +57,9 @@ class Datestatustimer:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @datestatus.command(name="date", pass_context=True)
+    @datestatus.command()
     @checks.is_owner()
-    async def _date_datestatus(self, ctx, month: int, day: int):
+    async def date(self, month: int, day: int):
         """Set the date for countdown"""
         try:
             datetime.datetime.strptime(f"{month}-{day}", "%m-%d")
@@ -69,10 +69,9 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
-    @datestatus.command(name="printdate", pass_context=False)
+    @datestatus.command()
     @checks.is_owner()
-    @test_decorator("POTATO!")
-    async def _printdate_datestatus(self):
+    async def printdate(self):
         """Prints date that the cog is counting towards"""
         await self.bot.say(f"Counting down towards "
                            f"{month_name(self.settings['MONTH_NUMBER'])} {self.settings['DAY_NUMBER']}")
