@@ -8,33 +8,34 @@ import os
 import time
 import datetime
 from typing import Dict
-from functools import wraps
 
 
 __author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.4"
 
 
-def test_decorator(func):
-    def wrapper(*args, **kwargs):
-        args[0].bot.say("HELLooh")
-        return func(*args, **kwargs)
-    return wrapper
+def test_decorator(arg):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            self.bot.say(arg)
+            return func(self, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def owner_command(hidden=False, context=False):
-    def wrapper(self, *args, **kwargs):
-        def decorator(func):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
             decorator1 = self.datestatus.command(name=func.__name__[1:-11], pass_context=context, hidden=hidden)
             self.bot.say("The next 3 lines are things")
             self.bot.say(decorator1)
             decorator2 = checks.is_owner()
             self.bot.say(decorator2)
-            q = decorator1(decorator2(func(*args, **kwargs)))
+            q = decorator1(decorator2(func(self, *args, **kwargs)))
             self.bot.say(q)
             return q
-        return decorator
-    return wrapper
+        return wrapper
+    return decorator
 
 
 class Datestatustimer:
@@ -68,7 +69,7 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
-    @test_decorator
+    @test_decorator("POTATO!")
     @datestatus.command(name="printdate", pass_context=False)
     @checks.is_owner()
     async def _printdate_datestatus(self):
