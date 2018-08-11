@@ -8,12 +8,15 @@ import os
 import time
 import datetime
 from typing import Dict
+from functools import wraps
+
 
 __author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.4"
 
 
 def test_decorator(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         args[0].bot.say("HELLooh")
         return func(*args, **kwargs)
