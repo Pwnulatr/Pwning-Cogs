@@ -69,7 +69,6 @@ class Datestatustimer:
             msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
         await self.bot.say(msg)
 
-    @test_decorator("POTATO!")
     @datestatus.command(name="printdate", pass_context=False)
     @checks.is_owner()
     async def _printdate_datestatus(self):
