@@ -1,4 +1,3 @@
-# Coded by Pwnulatr with the help of many cogs that came with Red
 from discord.ext import commands
 from __main__ import send_cmd_help
 from .utils.dataIO import dataIO
@@ -7,8 +6,10 @@ from cogs.utils import checks
 import discord
 import os
 import time
+import datetime
+from typing import Dict
 
-__author__ = "Pwnulatr"
+__author__ = "Pwnulatr and Tyler"
 __version__ = "1.1.3"
 
 monthname = {
@@ -26,150 +27,123 @@ monthname = {
     12: "December"}
 
 
+bot = None
+file_path = "data/pwning-cogs/datestatustimer/settings.json"
+settings = dataIO.load_json(file_path)
+last_check = None
+
+
+def owner_command(hidden=False):
+    def decorator(func):
+        return datestatus.command(name=func.__name__[1:-11], pass_context=False, hidden=hidden)(checks.is_owner()(func))
+    return decorator
+
+
+def change_settings(d: Dict[str, any]):
+    for k, v in d.items():
+        settings[k] = v
+    dataIO.save_json(file_path)
+
+
 class Datestatustimer:
-    """Calculates the time between dates and makes it the bot \"playing\" status"""
+    def __init__(self, _bot):
+        global bot
+        bot = _bot
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.file_path = "data/pwning-cogs/datestatustimer/settings.json"
-        self.settings = dataIO.load_json(self.file_path)
-        self.last_check = None
 
-# ===============================GROUP DEFINE=================================
-    @commands.group(pass_context=True)
-    async def datestatus(self, ctx):
-        """These are the settings for the date status cog"""
+@commands.group(pass_context=True)
+async def datestatus(ctx):
+    if ctx.invoked_subcommand is None:
+        await send_cmd_help(ctx)
 
-        if ctx.invoked_subcommand is None:
-            await send_cmd_help(ctx)
 
-# =============================================================================
-    @datestatus.command(name="date", pass_context=True)
-    @checks.is_owner()
-    async def _date_datestatus(self, ctx, month: int, day: int):
-        """Set the date for countdown"""
-        monthrange = list(range(1, 13))
-        dayrange = list(range(1, 32))
-        thirty_month = [4, 6, 9, 11]
+@owner_command()
+async def _date_datestatus(self, month: int, day: int):
+    try:
+        datetime.datetime.strptime(f"{month}-{day}", "%m-%d")
+        change_settings({"MONTH_NUMBER": month, "DAY_NUMBER": day})
+        msg = f"Date set to {day} of {monthname[month]}"
+    except ValueError:
+        msg = "You have not entered a valid date.\nBe sure it's formatted as `month day`"
+    await self.bot.say(msg)
 
-        if month in monthrange and day in dayrange:
-            if month == 2 and day <= 28:
-                self.settings["MONTH_NUMBER"] = month
-                self.settings["DAY_NUMBER"] = day
-                dataIO.save_json(self.file_path, self.settings)
-                await self.bot.say(f"Date set to {day} of {monthname[month]}")
-            elif month in thirty_month and day <= 30:
-                self.settings["MONTH_NUMBER"] = month
-                self.settings["DAY_NUMBER"] = day
-                dataIO.save_json(self.file_path, self.settings)
-                await self.bot.say(f"Date set to {day} of {monthname[month]}")
-            elif month == 2 and day >= 29:
-                await self.bot.say("You have not entered a valid date.\nBe sure it is formatted as `month day`")
-            else:
-                self.settings["MONTH_NUMBER"] = month
-                self.settings["DAY_NUMBER"] = day
-                dataIO.save_json(self.file_path, self.settings)
-                await self.bot.say(f"Date set to {day} of {monthname[month]}")
+
+@owner_command()
+async def _printdate_datestatus(self):
+    await self.bot.say(f"Counting down towards {monthname[settings['MONTH_NUMBER']]} {settings['DAY_NUMBER']}")
+
+
+@owner_command()
+async def _name_datestatus(self, *, name=None):
+    change_settings({"DATE_NAME": name})
+    await self.bot.say(f"Date name successfully set to `{name}`" if name else "Date name cleared.")
+
+
+@owner_command()
+async def _force_update_datestatus():
+    status_verify = status_creator()
+
+    await bot.change_presence(game=discord.Game(name=status_verify))
+    global last_check
+    last_check = int(time.perf_counter())
+    await bot.say("Done.")
+
+
+@owner_command(hidden=True)
+async def _debug_datestatus():
+    await bot.say(
+        f"Status: {self.status_creator()}\n"
+        f"Days Remaining: {self.datecheck()}\n"
+        f"Datatype for days: {type(self.datecheck())}\n"
+        f"Name of Date: {settings['DATE_NAME']}"
+    )
+
+
+def datecheck():
+    today = date.today()
+    monthnumber = settings["MONTH_NUMBER"]
+    daysnumber = settings["DAY_NUMBER"]
+    targetdate = date(today.year, monthnumber, daysnumber)
+
+    if targetdate < today:
+        targetdate = targetdate.replace(year=today.year + 1)
+        daysremain = abs(targetdate - today)
+        return daysremain.days
+    else:
+        daysremain = abs(targetdate - today)
+        return daysremain.days
+
+
+def status_creator():
+    days_remaining = datecheck()
+    datename = settings["DATE_NAME"]
+    if datename is None:
+        if days_remaining == 1:
+            return "1 Day Remaining!"
         else:
-            await self.bot.say("You have not entered a valid date.\nBe sure it is formatted as `month day`")
-
-# =============================================================================
-    @datestatus.command(name="printdate", pass_context=False)
-    @checks.is_owner()
-    async def _printdate_datestatus(self):
-        """Prints date that the cog is counting towards"""
-        month = self.settings["MONTH_NUMBER"]
-        day = self.settings["DAY_NUMBER"]
-
-        await self.bot.say(f"Counting down towards {monthname[month]} {day}")
-
-# =============================================================================
-    @datestatus.command(name="name", pass_context=False)
-    @checks.is_owner()
-    async def _name_datestatus(self, *, name=None):
-        """Name for the day that you are counting down for. Leave blank to clear."""
-
-        if name:
-            self.settings["DATE_NAME"] = name
-            dataIO.save_json(self.file_path, self.settings)
-            await self.bot.say(f"Date name successfully set to `{name}`")
+            return f"{days_remaining} Days Remaining!"
+    else:
+        if days_remaining == 1:
+            return f"1 Day until {datename}!"
         else:
-            self.settings["DATE_NAME"] = None
-            dataIO.save_json(self.file_path, self.settings)
-            await self.bot.say("Date name cleared.")
+            return f"{days_remaining} Days until {datename}!"
 
-# =============================================================================
-    @datestatus.command(name="force_update", pass_context=False)
-    @checks.is_owner()
-    async def _force_update_datestatus(self):
-        """Forces an update of the status on command"""
+
+async def check_date_looper(self, message):
+    if not message.channel.is_private:
         status_verify = self.status_creator()
+        current_game = str(message.server.me.game)
 
-        await self.bot.change_presence(game=discord.Game(name=status_verify))
-        self.last_check = int(time.perf_counter())
-        await self.bot.say("Done.")
+        if self.last_check is None:  # first run
+            self.last_check = int(time.perf_counter())
+            await self.bot.change_presence(game=discord.Game(name=status_verify))
 
-# =============================================================================
-    @datestatus.command(name="debug", hidden=True, pass_context=False)
-    @checks.is_owner()
-    async def _debug_datestatus(self):
-        """debugging info for dev"""
-        datename = self.settings["DATE_NAME"]
-        status_verify = self.status_creator()
-        datecheck = self.datecheck()
-        typeofformat = type(self.datecheck())
-
-        await self.bot.say(f"Status: {status_verify}\nDays Remaining: "
-                           f"{datecheck}\nDatatype for days: {typeofformat}\n"
-                           f"Name of Date: {datename}")
-
-# =============================================================================
-    def datecheck(self):
-        today = date.today()
-        monthnumber = self.settings["MONTH_NUMBER"]
-        daysnumber = self.settings["DAY_NUMBER"]
-        targetdate = date(today.year, monthnumber, daysnumber)
-
-        if targetdate < today:
-            targetdate = targetdate.replace(year=today.year + 1)
-            daysremain = abs(targetdate - today)
-            return daysremain.days
-        else:
-            daysremain = abs(targetdate - today)
-            return daysremain.days
-
-# =============================================================================
-    def status_creator(self):
-        days_remaining = self.datecheck()
-        datename = self.settings["DATE_NAME"]
-        if datename is None:
-            if days_remaining == 1:
-                return "1 Day Remaining!"
-            else:
-                return f"{days_remaining} Days Remaining!"
-        else:
-            if days_remaining == 1:
-                return f"1 Day until {datename}!"
-            else:
-                return f"{days_remaining} Days until {datename}!"
-
-# =============================================================================
-    async def check_date_looper(self, message):
-        if not message.channel.is_private:
-            status_verify = self.status_creator()
-            current_game = str(message.server.me.game)
-
-            if self.last_check is None:  # first run
-                self.last_check = int(time.perf_counter())
+        if abs(self.last_check - int(time.perf_counter())) >= 3600:
+            self.last_check = int(time.perf_counter())
+            if status_verify != current_game:
                 await self.bot.change_presence(game=discord.Game(name=status_verify))
 
-            if abs(self.last_check - int(time.perf_counter())) >= 3600:
-                self.last_check = int(time.perf_counter())
-                if status_verify != current_game:
-                    await self.bot.change_presence(game=discord.Game(name=status_verify))
 
-
-# =============================================================================
 def check_folders():
     folder = "data/pwning-cogs/datestatustimer"
     if not os.path.exists(folder):

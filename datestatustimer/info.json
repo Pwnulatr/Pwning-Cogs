@@ -1,5 +1,5 @@
 {
-    "AUTHOR" : "Pwnulatr",
+    "AUTHOR" : "Pwnulatr and Tyler",
     "INSTALL_MSG" : "Successfully installed the cog.\nuse `[p]help` to see the commands for datestatustimer under `Datestatustimer`",
     "NAME" : "Datestatustimer",
     "SHORT" : "Counts down days until a set event in bots playing status",
